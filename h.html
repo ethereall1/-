@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Калькулятор зарплаты за смену</title>
+	<link rel="stylesheet" href="style.css">
+	<meta name="description" content="Калькулятор оплаты смены с учётом переработок и сливов">
+	<style>/* tiny fallback for body background on old clients */:root{color-scheme:dark}</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<div>
+				<div class="title">Калькулятор зарплаты за смену</div>
+				<div class="subtitle">Быстрое и точное вычисление оплаты с учётом переработки и сливов</div>
+			</div>
+		</div>
+
+		<div class="card">
+			<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+				<div>
+					<div class="small">Общий итог</div>
+					<div style="font-size:20px;font-weight:700" id="overallTotal">—</div>
+				</div>
+				<div class="small" style="color:var(--muted);text-align:right">Сумма всех записей и компенсаций</div>
+			</div>
+			<form id="calcForm">
+				<div class="form-grid">
+					<div class="form-row">
+						<label for="date">Дата смены</label>
+						<input id="date" type="date" required>
+					</div>
+
+					<div class="form-row">
+						<label for="machine">Тип машины</label>
+						<select id="machine">
+							<option value="maz">МАЗ</option>
+							<option value="kamaz" selected>КамАЗ</option>
+						</select>
+					</div>
+
+					<div class="form-row">
+						<label for="start">Время начала</label>
+						<input id="start" type="time" required>
+					</div>
+
+					<div class="form-row">
+						<label for="end">Время окончания</label>
+						<input id="end" type="time" required>
+					</div>
+
+					<div class="form-row">
+						<label for="sliv">Количество сливов</label>
+						<input id="sliv" type="number" min="0" value="0">
+					</div>
+
+					<div class="form-row">
+						<label for="expenses">Расходы (компенсация)</label>
+						<input id="expenses" type="number" min="0" step="0.01" value="0">
+					</div>
+
+					<div class="form-row"></div>
+				</div>
+
+				<div class="actions">
+					<button type="button" id="clearBtn" class="btn secondary">Очистить</button>
+					<button id="submitBtn" class="btn" type="submit">Посчитать</button>
+					<button id="cancelEditBtn" type="button" class="btn secondary" style="display:none;margin-left:8px">Отменить редактирование</button>
+				</div>
+
+				<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+					<input id="personalExpense" type="number" min="0" step="1" placeholder="Сумма расхода (₽)" style="flex:1;">
+					<input id="expenseDesc" type="text" placeholder="Описание (например: выгрузка)" style="flex:2;">
+					<button id="addExpenseBtn" type="button" class="btn secondary">Добавить расход</button>
+				</div>
+			</form>
+
+			<div id="reportCard" class="report" style="display:block;margin-top:18px">
+				<div class="card" style="padding:12px;">
+					<div class="small">Отчёт</div>
+					<div class="report-row"><div class="small">Дата смены</div><div id="reportDate" class="large">—</div></div>
+					<div class="report-row"><div class="small">Отработанное время</div><div id="workedTime">—</div></div>
+					<div class="report-row"><div class="small">Часы переработки</div><div id="overtime">—</div></div>
+					<div class="report-row"><div class="small">Оплата за смену</div><div id="payShift">—</div></div>
+					<div class="report-row"><div class="small">Оплата за переработку</div><div id="payOvertime">—</div></div>
+					<div class="report-row"><div class="small">Оплата за сливы</div><div id="paySliv">—</div></div>
+					<div class="report-row total"><div class="small">Итог за день</div><div id="total">—</div></div>
+				</div>
+      
+				<div class="card" style="margin-top:16px;">
+					<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+						<div>
+							<div class="small">История</div>
+							<div class="subtitle">Сохранённые расчёты по дням</div>
+						</div>
+
+					<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+						<label class="small" style="color:var(--muted)">Фильтр:</label>
+						<input id="filterFrom" type="date" style="padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);">
+						<input id="filterTo" type="date" style="padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);">
+						<input id="filterMonth" type="month" style="padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);">
+						<button id="clearFilterBtn" class="btn secondary" type="button">Сбросить фильтр</button>
+						<button id="exportBtn" class="btn secondary" type="button">Экспорт CSV</button>
+						<button id="printBtn" class="btn secondary" type="button">Печать / PDF</button>
+						<button id="clearFinalizedBtn" class="btn secondary" type="button">Очистить финализированные</button>
+						<button id="clearHistoryBtn" class="btn secondary" type="button">Очистить историю</button>
+					</div>
+					</div>
+
+					<div id="historyMeta" style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+						<div class="small">Показано: <span id="shownCount">0</span> записей</div>
+						<div class="small">Сумма смен: <strong id="shownShiftSum">—</strong></div>
+						<div class="small">Сумма расходов: <strong id="shownExpenseSum">—</strong></div>
+						<div class="small">Чистый итог: <strong id="shownNet">—</strong></div>
+					</div>
+
+					<div id="periodTabs" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap"></div>
+
+					<div id="historyList" style="display:grid;gap:8px;"></div>
+				</div>
+				<div class="footer-note">Правила: стандартная смена — 7 часов. Переработка <30 минут не оплачивается, ≥30 минут округляется вверх до часа.</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+</html>
