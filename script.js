@@ -511,8 +511,8 @@ q('#calcForm').addEventListener('submit', function(e){
   }
 
   const rates = {
-    maz: {shift:4200, overtime:500, sliv:1500},
-    kamaz:{shift:4000, overtime:500, sliv:1300}
+    maz: {shift:1700, overtime:500, sliv:1500},
+    kamaz:{shift:1500, overtime:500, sliv:1300}
   };
   const r = rates[machine] || rates.kamaz;
 
